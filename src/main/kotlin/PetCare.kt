@@ -23,11 +23,7 @@ class PetCare {
 
     fun validarTipoDueno(tipoDueno: String): Boolean {
 
-        return tipoDueno.lowercase() in listOf(
-            "particular",
-            "convenio",
-            "municipal"
-        )
+        return tipoDueno.lowercase() in listOf("particular", "convenio", "municipal")
     }
 
     fun boxesDisponibles(): Int {
@@ -41,13 +37,11 @@ class PetCare {
 
         try {
 
-            if (!validarCodigo(paciente.codigoAtencion)) {
-                println("Error: código de atención inválido")
+            if (!validarCodigo(paciente.codigoAtencion)) { println("Error: código de atención inválido")
                 return
             }
 
-            if (!validarTipoDueno(paciente.tipoDueno)) {
-                println("Error: tipo de dueño inválido")
+            if (!validarTipoDueno(paciente.tipoDueno)) { println("Error: tipo de dueño inválido")
                 return
             }
 
@@ -55,44 +49,43 @@ class PetCare {
                 it.estado is EstadoBox.Libre
             }
 
-            if (boxLibre == null) {
-                println("Error: no hay boxes disponibles")
+            if (boxLibre == null) { println("Error: no hay boxes disponibles")
                 return
             }
 
-            boxLibre.estado = EstadoBox.EnProceso(
-                "Registrando entrada"
-            )
+            boxLibre.estado = EstadoBox.EnProceso("Registrando entrada")
 
-            println(
-                "Procesando entrada de ${paciente.nombre}..."
-            )
+            println("Procesando entrada de ${paciente.nombre}...")
 
             delay(3000)
 
             boxLibre.estado =
                 EstadoBox.EnAtencion(paciente)
 
-            println(
-                "${paciente.nombre} ingresó al Box ${boxLibre.numero}"
-            )
+            println("${paciente.nombre} ingresó al Box ${boxLibre.numero}")
 
-        } catch (e: Exception) {
+            // Si el paciente es exótico, se indica si es silvestre o no.
+            if (paciente is Exotico) {
 
-            println("Error al registrar entrada")
+                val detalleSilvestre = if (paciente.esSilvestre) {
+                    "Sí"
+                } else {
+                    "No"
+                }
+                println("Animal silvestre: $detalleSilvestre")
+            }
+
+        } catch (e: Exception) { println("Error al registrar entrada")
         }
     }
 
-    suspend fun registrarSalida(
-        codigoAtencion: String,
-        minutos: Int
-    ) {
+    suspend fun registrarSalida(codigoAtencion: String, minutos: Int)
+    {
 
         try {
 
             // Validamos primero el formato del código.
-            if (!validarCodigo(codigoAtencion)) {
-                println("Error: código de atención inválido")
+            if (!validarCodigo(codigoAtencion)) { println("Error: código de atención inválido")
                 return
             }
 
@@ -105,28 +98,21 @@ class PetCare {
                         estado.paciente.codigoAtencion == codigoAtencion
             }
 
-            if (boxPaciente == null) {
-                println("Error: paciente no encontrado")
+            if (boxPaciente == null) { println("Error: paciente no encontrado")
                 return
             }
 
             val estadoActual = boxPaciente.estado
 
-            if (estadoActual !is EstadoBox.EnAtencion) {
-                println("Error: el box no se encuentra en atención")
+            if (estadoActual !is EstadoBox.EnAtencion) { println("Error: el box no se encuentra en atención")
                 return
             }
 
             val paciente = estadoActual.paciente
 
-            boxPaciente.estado = EstadoBox.EnProceso(
-                "Calculando tarifa"
-            )
+            boxPaciente.estado = EstadoBox.EnProceso("Calculando tarifa")
 
-            println(
-                "Procesando salida de ${paciente.nombre}..."
-            )
-
+            println("Procesando salida de ${paciente.nombre}...")
             delay(6500)
 
             var monto = paciente.calcularMonto(minutos)
@@ -135,12 +121,9 @@ class PetCare {
             val ceroPermitido =
                 paciente is Felino && minutos < 20
 
-            if (monto <= 0 && !ceroPermitido) {
+            if (monto <= 0 && !ceroPermitido) { println("Error: tarifa inválida")
 
-                println("Error: tarifa inválida")
-
-                boxPaciente.estado =
-                    EstadoBox.EnAtencion(paciente)
+                boxPaciente.estado = EstadoBox.EnAtencion(paciente)
 
                 return
             }
@@ -156,20 +139,10 @@ class PetCare {
                 monto *= 0.50
             }
 
-            val ticket = Ticket(
-                numeroTicket = contadorTicket,
-                nombrePaciente = paciente.nombre,
-                tipoPaciente = paciente.tipoPaciente(),
-                tipoDueno = paciente.tipoDueno,
-                codigoAtencion = paciente.codigoAtencion,
-                minutosAtencion = minutos,
-                montoPagado = monto
-            )
+            val ticket = Ticket(numeroTicket = contadorTicket, nombrePaciente = paciente.nombre, tipoPaciente = paciente.tipoPaciente(), tipoDueno = paciente.tipoDueno, codigoAtencion = paciente.codigoAtencion, minutosAtencion = minutos, montoPagado = monto)
 
             historial.add(ticket)
-
             recaudacionTotal += monto
-
             contadorTicket++
 
             boxPaciente.estado = EstadoBox.Libre
@@ -179,16 +152,11 @@ class PetCare {
             println("Paciente: ${ticket.nombrePaciente}")
             println("Monto pagado: $${ticket.montoPagado}")
 
-        } catch (e: Exception) {
-
-            println("Error al registrar salida")
+        } catch (e: Exception) { println("Error al registrar salida")
         }
     }
 
-    fun mostrarBoxes() {
-
-        boxes.forEach {
-            it.mostrarEstado()
+    fun mostrarBoxes() { boxes.forEach { it.mostrarEstado()
         }
     }
 }
